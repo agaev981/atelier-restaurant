@@ -255,7 +255,7 @@ form.addEventListener("submit", async (e) => {
   };
 
   try {
-    const res = await fetch("/api/bookings", {
+    const res = await fetch(`${window.ATELIER_API_BASE || ""}/api/bookings`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
