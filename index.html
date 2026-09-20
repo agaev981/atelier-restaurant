@@ -332,10 +332,9 @@
 
   <script>
     // Адрес бэкенда для публичной версии сайта (GitHub Pages).
-    // После деплоя на Render впишите сюда адрес сервиса, например:
-    // window.ATELIER_API_BASE = "https://atelier-restaurant.onrender.com";
-    // Локально оставляем пустым — API на том же домене.
-    window.ATELIER_API_BASE = "";
+    // Бэкенд задеплоен на Render; локально (!) значение ниже игнорируется —
+    // при недоступности Render форма автоматически шлёт запрос на тот же домен.
+    window.ATELIER_API_BASE = "https://atelier-restaurant.onrender.com";
   </script>
   <script src="js/main.js"></script>
 </body>
