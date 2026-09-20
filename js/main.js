@@ -178,6 +178,7 @@ const timeInput = document.getElementById("time");
 const guestsInput = document.getElementById("guests");
 const nameInput = document.getElementById("name");
 const phoneInput = document.getElementById("phone");
+const commentInput = document.getElementById("comment");
 
 const today = new Date();
 const iso = today.toISOString().split("T")[0];
@@ -235,31 +236,75 @@ function validate() {
   input.addEventListener("input", () => setError(input, ""))
 );
 
-form.addEventListener("submit", (e) => {
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!validate()) return;
 
-  const d = new Date(dateInput.value + "T00:00:00");
-  const dateStr = d.toLocaleDateString("ru-RU", { day: "numeric", month: "long" });
-  const guestsWord = guestsInput.value === "1" ? "гостя" : "гостей";
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const originalLabel = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Отправляем…";
 
-  openModal(`
-    ${nameInput.value.trim()}, ваш столик забронирован на
-    <strong>${dateStr}, ${timeInput.value}</strong> —
-    <strong>${guestsInput.value} ${guestsWord}</strong>.
-    Администратор перезвонит на <strong>${phoneInput.value}</strong> для подтверждения.
-  `);
-  form.reset();
-  dateInput.value = iso;
+  const payload = {
+    name: nameInput.value.trim(),
+    phone: phoneInput.value,
+    guests: Number(guestsInput.value),
+    date: dateInput.value,
+    time: timeInput.value,
+    comment: commentInput.value.trim() || null
+  };
+
+  try {
+    const res = await fetch("/api/bookings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      let detail = "";
+      try {
+        const err = await res.json();
+        detail = Array.isArray(err.detail) && err.detail.length
+          ? err.detail[0].msg.replace(/^Value error,\s*/i, "")
+          : "";
+      } catch (_) { /* ignore */ }
+      throw new Error(detail || `Ошибка сервера (${res.status})`);
+    }
+
+    const data = await res.json();
+    const d = new Date(payload.date + "T00:00:00");
+    const dateStr = d.toLocaleDateString("ru-RU", { day: "numeric", month: "long" });
+    const guestsWord = payload.guests === 1 ? "гостя" : "гостей";
+
+    openModal(`
+      ${payload.name}, ваш столик забронирован на
+      <strong>${dateStr}, ${payload.time}</strong> —
+      <strong>${payload.guests} ${guestsWord}</strong>.
+      Заявка №${data.id}. Администратор перезвонит на <strong>${payload.phone}</strong> для подтверждения.
+    `);
+    form.reset();
+    dateInput.value = iso;
+  } catch (err) {
+    openModal(
+      `${err.message || "Не удалось отправить заявку."} Позвоните нам: <strong><a href="tel:+74951234567">+7 (495) 123-45-67</a></strong> — забронируем столик вручную.`,
+      "Не получилось отправить заявку"
+    );
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalLabel;
+  }
 });
 
 /* ================= modal ================= */
 
 const modal = document.getElementById("modal");
 const modalText = document.getElementById("modalText");
+const modalTitle = document.getElementById("modalTitle");
 
-function openModal(html) {
-  modalText.innerHTML = html;
+function openModal(htmlText, title = "Столик забронирован") {
+  modalText.innerHTML = htmlText;
+  modalTitle.textContent = title;
   modal.classList.add("is-open");
   modal.setAttribute("aria-hidden", "false");
   document.body.classList.add("is-locked");
