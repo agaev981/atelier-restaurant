@@ -255,11 +255,25 @@ form.addEventListener("submit", async (e) => {
   };
 
   try {
-    const res = await fetch(`${window.ATELIER_API_BASE || ""}/api/bookings`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+    const base = window.ATELIER_API_BASE || "";
+    let res;
+    try {
+      res = await fetch(`${base}/api/bookings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+    } catch (netErr) {
+      if (base) {
+        res = await fetch("/api/bookings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } else {
+        throw netErr;
+      }
+    }
 
     if (!res.ok) {
       let detail = "";

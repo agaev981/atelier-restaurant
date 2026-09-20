@@ -46,16 +46,21 @@ python -m http.server 8080
 ## Публичный деплой (бесплатно, Render)
 
 GitHub Pages отдаёт только статику, поэтому для рабочей формы брони бэкенд
-деплоится на [render.com](https://render.com) (free-план):
+деплоится на [render.com](https://render.com) (free-план).
 
-1. Залейте репозиторий на GitHub (уже сделано).
-2. На render.com: **New → Blueprint**, выберите этот репозиторий — настройки
-   подхватятся из `render.yaml`.
-3. На шаге настроек впишите секреты из `backend/.env`:
+Самый быстрый путь — кнопка автодеплоя:
+
+**[→ Deploy to Render (один клик)](https://render.com/deploy?repo=https://github.com/agaev981/atelier-restaurant)**
+
+1. Войдите через GitHub.
+2. На шаге переменных вставьте секреты из `backend/.env`:
    `TELEGRAM_BOT_TOKEN` и `TELEGRAM_CHAT_ID`.
-4. После деплоя Render даст адрес вида `https://atelier-restaurant.onrender.com`.
-5. Впишите его в `index.html` в строку `window.ATELIER_API_BASE` и запушьте —
-   форма брони на GitHub Pages начнёт работать.
+3. Нажмите **Apply** — Render создаст сервис из `render.yaml`
+   (адрес вида `https://atelier-restaurant.onrender.com`).
+4. Адрес сервиса нужно вписать в `index.html` → `window.ATELIER_API_BASE`.
+
+Либо вручную: **New → Blueprint** → выберите репозиторий — настройки
+подхватятся из `render.yaml`.
 
 Нюанс free-плана Render: диск эфемерный, при перезапусках сервиса база SQLite
 сбрасывается. Для демо этого достаточно; для продакшена подключите Postgres.
